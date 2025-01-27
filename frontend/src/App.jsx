@@ -1,12 +1,14 @@
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
+
 import './App.css'
+import Login from './pages/Login'
 
 function App() {
   
 
   return (
-    <Button>Click me</Button>
+    <main>
+      <Login/>
+    </main>
   )
 }
 
