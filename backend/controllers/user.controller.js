@@ -33,3 +33,44 @@ export const register = async function (res,req) {
                 });
         }
  }
+
+ export const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({
+                status: 'Bad Request',
+                message: "Please fill all fields"
+                });
+        }
+        const user = User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({
+                status: 'Unauthorized',
+                message: "Invalid email or password"
+           });
+        }
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+            return res.status(401).json({
+                status: 'Unauthorized',
+                message: "Invalid email or password"
+            });
+       }
+        const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY,
+                {
+                 expiresIn: '1h'
+                });
+            res.status(200).json({
+                status: 'Success',
+                message: "Login successful",
+                token
+                });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                status: 'Error',
+                message: "Internal Server Error"
+            });
+        }
+}
