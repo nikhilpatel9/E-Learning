@@ -40,7 +40,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center h-screen items-center">
       <Tabs defaultValue="signup" className="w-[400px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signup">SignUp</TabsTrigger>
