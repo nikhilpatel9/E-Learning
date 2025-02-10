@@ -14,6 +14,7 @@ mongoose
   .catch((err) => {
     console.log(err);
   });
+  app.use(express.json());
   app.use(cookieParser());
   app.use(cors({
     origin:"http://localhost:5173",
@@ -24,7 +25,7 @@ mongoose
     });
 app.use("/api/user", userRoute);
 
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT||3000, () => {
     console.log(`Server is running on port ${process.env.PORT}`);
   });
   

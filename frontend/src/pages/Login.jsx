@@ -15,7 +15,12 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import {
+  useLoginUserMutation,
+  useRegisterUserMutation,
+} from "@/features/api/authApi";
 
 export default function Login() {
   const [signupInput, setSignupInput] = useState({
@@ -24,7 +29,24 @@ export default function Login() {
     password: "",
   });
   const [loginInput, setLoginInput] = useState({ email: "", password: "" });
-
+  const [
+    registerUser,
+    {
+      data: registerData,
+      error: registerError,
+      isLoading: registerIsLoading,
+      isSuccess: registerIsSuccess,
+    },
+  ] = useRegisterUserMutation();
+  const [
+    loginUser,
+    {
+      data: loginData,
+      error: loginError,
+      isLoading: loginIsLoading,
+      isSuccess: loginIsSuccess,
+    },
+  ] = useLoginUserMutation();
   const changeInputHandler = (e, type) => {
     const { name, value } = e.target;
     if (type === "signup") {
@@ -34,10 +56,11 @@ export default function Login() {
     }
   };
 
-  const handleSubmit = (type) => {
+  const handleSubmit = async (type) => {
     const inputData = type === "signup" ? signupInput : loginInput;
-    console.log("Submitted Data:", inputData);
-  };
+    const action = type === "signup" ? registerUser : loginUser;
+    await action(inputData);
+  }
 
   return (
     <div className="flex justify-center h-screen items-center">
@@ -94,7 +117,15 @@ export default function Login() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={() => handleSubmit("signup")}>Sign Up</Button>
+              <Button disabled={registerIsLoading}
+               onClick={() => handleSubmit("signup")}>{
+                registerIsLoading ? (
+                  <>
+                  <Loader2 className=" mr-2 h-2 w-4 animate-spin"/>Please wait...
+                  </>
+                ) : "Signup"
+               }
+                </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -134,7 +165,13 @@ export default function Login() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={() => handleSubmit("login")}>Login</Button>
+              <Button disabled={loginIsLoading} onClick={() => handleSubmit("login")}>{
+                loginIsLoading ?(
+                  <>
+                  <Loader2 className=" mr-2 h-2 w-4 animate-spin"/>Please wait...
+                  </>
+                ):'Login'
+              }</Button>
             </CardFooter>
           </Card>
         </TabsContent>

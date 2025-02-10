@@ -1,37 +1,38 @@
 import { User } from "../models/user.model.js";
 import bcrypt from 'bcryptjs'
-export const register = async function (res,req) {
+
+import { generateToken } from "../utils/generateToken.js";
+export const register = async  (req,res) =>{
     try {
     const {name, email, password} = req.body;
-    if(!name||!email||!password) {
+    if(!name || !email|| !password) {
         return res.status(400).json({
-            status: 'Bad Request',
+            success: false,
             message: "Please fill all fields"});
-        }
+    }
     const user = await User.findOne({email});
     if (user) {
         return res.status(400).json({
-            status: 'Bad Request',
+            success: false,
             message: "Email already exists"});
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({
+    const hashedPassword = await bcrypt.hash(password, 10)
+    await User.create({
         name,
         email,
-        password: hashedPassword
+        password:hashedPassword
     });
-        await newUser.save();
-        res.status(201).json({
-            status: 'Success',
+        return res.status(201).json({
+            success: true,
             message: "User created successfully"
-        });
+        })
         } catch (error) {
-            console.log(error);
-            res.status(500).json({
-                status: 'Error',
-                message: "Internal Server Error"
-                });
-        }
+        console.log(error);
+        return res.status(500).json({
+            success: false ,
+            message: "Internal Server Error"
+        })
+     }
  }
 
  export const login = async (req, res) => {
@@ -39,37 +40,29 @@ export const register = async function (res,req) {
         const { email, password } = req.body;
         if (!email || !password) {
             return res.status(400).json({
-                status: 'Bad Request',
+                success: false,
                 message: "Please fill all fields"
                 });
         }
-        const user = User.findOne({ email });
+        const user = await User.findOne({ email });
         if (!user) {
-            return res.status(401).json({
-                status: 'Unauthorized',
+            return res.status(400).json({
+                success: false,
                 message: "Invalid email or password"
            });
         }
         const isValidPassword = await bcrypt.compare(password, user.password);
         if (!isValidPassword) {
             return res.status(401).json({
-                status: 'Unauthorized',
+                success: false,
                 message: "Invalid email or password"
             });
        }
-        const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY,
-                {
-                 expiresIn: '1h'
-                });
-            res.status(200).json({
-                status: 'Success',
-                message: "Login successful",
-                token
-                });
+        token = generateToken(res,user, `Login Successful ! ${user.name}`);
         } catch (error) {
             console.log(error);
             res.status(500).json({
-                status: 'Error',
+                success: false,
                 message: "Internal Server Error"
             });
         }
