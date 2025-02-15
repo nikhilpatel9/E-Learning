@@ -18,7 +18,7 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import OAuth from "./OAuth";
+
 
 const Login = () => {
   const [signupInput, setSignupInput] = useState({ name: "", email: "", password: "" });
@@ -37,6 +37,10 @@ const Login = () => {
   const handleRegistration = async (type) => {
     const inputData = type === "signup" ? signupInput : loginInput;
     const action = type === "signup" ? registerUser : loginUser;
+    if (Object.values(inputData).some((val) => val.trim() === "")) {
+      toast.error("Please fill in all fields.");
+      return;
+    }
     await action(inputData);
   };
 
@@ -79,7 +83,7 @@ const Login = () => {
               <Button disabled={registerIsLoading} onClick={() => handleRegistration("signup")} className="w-full">
                 {registerIsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Signup"}
               </Button>
-              <OAuth />
+              
             </CardFooter>
           </Card>
         </TabsContent>
@@ -100,7 +104,7 @@ const Login = () => {
               <Button disabled={loginIsLoading} onClick={() => handleRegistration("login")} className="w-full">
                 {loginIsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Login"}
               </Button>
-              <OAuth />
+              
             </CardFooter>
           </Card>
         </TabsContent>
