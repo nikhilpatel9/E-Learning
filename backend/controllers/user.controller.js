@@ -1,71 +1,74 @@
-import { User } from "../models/user.model.js";
-import bcrypt from 'bcryptjs'
-
+import {User} from "../models/user.model.js";
+import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.js";
-export const register = async  (req,res) =>{
+
+export const register = async (req,res) => {
     try {
-    const {name, email, password} = req.body;
-    if(!name || !email|| !password) {
-        return res.status(400).json({
-            success: false,
-            message: "Please fill all fields"});
-    }
-    const user = await User.findOne({email});
-    if (user) {
-        return res.status(400).json({
-            success: false,
-            message: "Email already exists"});
-    }
-    const hashedPassword = await bcrypt.hash(password, 10)
-    await User.create({
-        name,
-        email,
-        password:hashedPassword
-    });
+       
+        const {name, email, password} = req.body; 
+        if(!name || !email || !password){
+            return res.status(400).json({
+                success:false,
+                message:"All fields are required."
+            })
+        }
+        const user = await User.findOne({email});
+        if(user){
+            return res.status(400).json({
+                success:false,
+                message:"User already exist with this email."
+            })
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await User.create({
+            name,
+            email,
+            password:hashedPassword
+        });
         return res.status(201).json({
-            success: true,
-            message: "User created successfully"
+            success:true,
+            message:"Account created successfully."
         })
-        } catch (error) {
+    } catch (error) {
         console.log(error);
         return res.status(500).json({
-            success: false ,
-            message: "Internal Server Error"
+            success:false,
+            message:"Failed to register"
         })
-     }
- }
-
- export const login = async (req, res) => {
+    }
+}
+export const login = async (req,res) => {
     try {
-        const { email, password } = req.body;
-        if (!email || !password) {
+        const {email, password} = req.body;
+        if(!email || !password){
             return res.status(400).json({
-                success: false,
-                message: "Please fill all fields"
-                });
+                success:false,
+                message:"All fields are required."
+            })
         }
-        const user = await User.findOne({ email });
-        if (!user) {
+        const user = await User.findOne({email});
+        if(!user){
             return res.status(400).json({
-                success: false,
-                message: "Invalid email or password"
-           });
+                success:false,
+                message:"Incorrect email or password"
+            })
         }
-        const isValidPassword = await bcrypt.compare(password, user.password);
-        if (!isValidPassword) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid email or password"
-            });
-       }
-        token = generateToken(res,user, `Login Successful ! ${user.name}`);
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({
-                success: false,
-                message: "Internal Server Error"
+        const isPasswordMatch = await bcrypt.compare(password, user.password);
+        if(!isPasswordMatch){
+            return res.status(400).json({
+                success:false,
+                message:"Incorrect email or password"
             });
         }
+        generateToken(res, user, `Welcome back ${user.name}`);
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:false,
+            message:"Failed to login"
+        })
+    }
 }
 export const logout = async (_,res) => {
     try {
