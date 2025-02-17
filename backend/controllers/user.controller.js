@@ -5,7 +5,7 @@ import { generateToken } from "../utils/generateToken.js";
 export const register = async (req,res) => {
     try {
        
-        const {name, email, password} = req.body; // patel214
+        const {name, email, password} = req.body; 
         if(!name || !email || !password){
             return res.status(400).json({
                 success:false,
@@ -84,3 +84,26 @@ export const logout = async (_,res) => {
         }) 
     }
 }
+export const googleLogin = async (req, res) => {
+    try {
+        const { name, email, photoUrl } = req.body;
+        let user = await User.findOne({ email });
+        const hashedPassword = await bcrypt.hash(password, 10);
+        if (!user) {
+            user = await User.create({
+                name,
+                email,
+                photoUrl,
+                password: hashedPassword
+            });
+        }
+        generateToken(res, user, `Welcome ${user.name}`);
+        
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to login with Google"
+        });
+    }
+};
