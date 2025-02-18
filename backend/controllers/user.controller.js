@@ -88,6 +88,7 @@ export const googleLogin = async (req, res) => {
     try {
         const { name, email, photoUrl } = req.body;
         let user = await User.findOne({ email });
+        
         const hashedPassword = await bcrypt.hash(password, 10);
         if (!user) {
             user = await User.create({

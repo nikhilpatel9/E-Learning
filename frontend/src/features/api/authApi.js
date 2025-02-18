@@ -35,7 +35,7 @@ export const authApi = createApi({
         }
         }),
         googleLogin: builder.mutation({
-            async queryFn(_, { dispatch }) {
+            async queryFn(_, {queryFulfilled, dispatch }) {
                 try {
                     const googleResult = await signInWithGoogle();
                     
@@ -53,7 +53,8 @@ export const authApi = createApi({
                         const data = await response.json();
                         
                         if (data.success) {
-                            dispatch(userLoggedIn({ user: data.user }));
+                            const result = await queryFulfilled;
+                            dispatch(userLoggedIn({ user: result.data.user }));
                             return { data };
                         }
                         return { error: data.message };

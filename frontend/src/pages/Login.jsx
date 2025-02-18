@@ -74,6 +74,7 @@ const Login = () => {
       toast.error("Please fill in all fields.");
       return;
     }
+    
     await action(inputData);
   };
 
@@ -137,7 +138,7 @@ const Login = () => {
               <Button 
                 disabled={registerIsLoading} 
                 onClick={() => handleRegistration("signup")} 
-                className="w-full"
+                
               >
                 {registerIsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Signup"}
               </Button>
