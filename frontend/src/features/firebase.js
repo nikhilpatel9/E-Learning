@@ -1,5 +1,5 @@
 
-import { getAuth, GoogleAuthProvider, signInWithPopup, browserPopupRedirectResolver } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -24,7 +24,7 @@ googleProvider.setCustomParameters({
 // Custom sign in function with proper error handling
 export const signInWithGoogle = async () => {
   try {
-    const result = await signInWithPopup(auth, googleProvider, browserPopupRedirectResolver);
+    const result = await signInWithPopup(auth, googleProvider); // Removed extra argument
     return {
       success: true,
       user: {

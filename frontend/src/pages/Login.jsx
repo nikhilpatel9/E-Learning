@@ -74,7 +74,6 @@ const Login = () => {
       toast.error("Please fill in all fields.");
       return;
     }
-    
     await action(inputData);
   };
 
