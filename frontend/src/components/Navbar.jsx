@@ -28,7 +28,7 @@ import DarkMode from "@/DarkMode";
 
 const Navbar = () => {
   
-const user=false;
+const user=true;
 const navigate = useNavigate();
 
   return (
@@ -50,7 +50,7 @@ const navigate = useNavigate();
               <DropdownMenuTrigger asChild>
                 <Avatar>
                   <AvatarImage
-                    src={user?.photoUrl || "https://github.com/shadcn.png"}
+                    src={"https://github.com/shadcn.png"}
                     alt="@shadcn"
                   />
                   <AvatarFallback>CN</AvatarFallback>
@@ -64,7 +64,6 @@ const navigate = useNavigate();
                     <Link to="my-learning">My learning</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    {" "}
                     <Link to="profile">Edit Profile</Link>{" "}
                   </DropdownMenuItem>
                   <DropdownMenuItem >
@@ -111,7 +110,7 @@ const MobileNavbar = ({user}) => {
           className="rounded-full hover:bg-gray-200"
           variant="outline"
         >
-          <Menu />
+        <Menu />
         </Button>
       </SheetTrigger>
       <SheetContent className="flex flex-col">
