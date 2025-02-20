@@ -1,5 +1,5 @@
 import {createApi, fetchBaseQuery} from "@reduxjs/toolkit/query/react";
-import { userLoggedIn,  } from "../authSlice";
+import { userLoggedIn, userLoggedOut,  } from "../authSlice";
 import { signInWithGoogle } from "../firebase";
 
 
@@ -33,6 +33,19 @@ export const authApi = createApi({
                 console.log(error);
             }
         }
+        }),
+        logoutUser: builder.mutation({
+            query: () => ({
+                url:"logout",
+                method:"GET"
+            }),
+            async onQueryStarted(_, {queryFulfilled, dispatch}) {
+                try { 
+                    dispatch(userLoggedOut());
+                } catch (error) {
+                    console.log(error);
+                }
+            }
         }),
         googleLogin: builder.mutation({
             async queryFn(_, { dispatch }) {
@@ -69,4 +82,5 @@ export const {
     useRegisterUserMutation,
     useLoginUserMutation,
     useGoogleLoginMutation,
+    useLogoutUserMutation,
 } = authApi;
