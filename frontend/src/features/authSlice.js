@@ -10,13 +10,16 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     userLoggedIn: (state, action) => {
-        state.user = action.payload.user;
-        state.isAuthenticated = true;
-    },
-    userLoggedOut:(state) => {
-        state.user = null;
-        state.isAuthenticated = false;
-    }
+      state.user = action.payload.user;
+      state.isAuthenticated = true;
+      
+  },
+  userLoggedOut: (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+     // localStorage.removeItem("user");
+  }
+  
   },
 });
 

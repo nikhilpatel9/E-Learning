@@ -8,6 +8,7 @@ import MyLearning from "./pages/student/MyLearning";
 import Profile from "./pages/student/Profile";
 
 
+
 const appRouter = createBrowserRouter([
   {
     path: "/",
@@ -35,9 +36,9 @@ const appRouter = createBrowserRouter([
           ),
       },{
         path: "profile",
-        element: (
-          <Profile/>
-        )
+        element:(
+            <Profile />
+        ),
       }
       
     ],
@@ -47,9 +48,7 @@ const appRouter = createBrowserRouter([
 function App() {
   return (
     <main>
-      
       <RouterProvider router={appRouter} />
-      
     </main>
   );
 }

@@ -1,6 +1,7 @@
 import {User} from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.js";
+import { deleteMediaFromCloudinary, uploadMedia } from "../utils/cloudinary.js";
 
 export const register = async (req,res) => {
     try {
@@ -84,6 +85,35 @@ export const logout = async (_,res) => {
         }) 
     }
 }
+// export const getUserProfile = async (req, res) => {
+//     try {
+//         const userId = req.id;
+//         console.log("Fetching profile for user ID:", userId);
+        
+//         const user = await User.findById(userId).select('-password');
+//         if (!user) {
+//             console.log("User not found in the database");
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "User not found",
+//             });
+//         }
+        
+//         console.log("User found:", user);
+//         return res.status(200).json({
+//             success: true,
+//             user,
+//         });
+
+//     } catch (error) {
+//         console.log("Error fetching user profile:", error);
+//         return res.status(500).json({
+//             success: false,
+//             message: "Failed to get user profile",
+//         });
+//     }
+// };
+
 export const googleLogin = async (req, res) => {
     try {
         const { name, email, photoUrl } = req.body;
@@ -95,7 +125,7 @@ export const googleLogin = async (req, res) => {
             user = await User.create({
                 name,
                 email,
-                photoUrl,
+                photoUrl:photoUrl,
                 password: hashedPassword
             });
         }
@@ -108,4 +138,69 @@ export const googleLogin = async (req, res) => {
             message: "Failed to login with Google"
         });
     }
-};
+}
+export const getUserProfile = async (req,res) => {
+    try {
+       // console.log("Loading user profile", req)
+        //const user = await User.findById(req._id);
+        const userId = req.id;
+        const user = await User.findById(userId).select("-password");
+        
+        if(!user){
+            return res.status(404).json({
+                message:"Profile not found",
+                success:false
+            })
+        }
+        return res.status(200).json({
+            success:true,
+            user
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:false,
+            message:"Failed to load user"
+        })
+    }
+}
+export const updateProfile = async (req,res) => {
+    try {
+        const userId = req.id;
+        const {name} = req.body;
+        const profilePhoto = req.file;
+
+        const user = await User.findById(userId);
+        if(!user){
+            return res.status(404).json({
+                message:"User not found",
+                success:false
+            }) 
+        }
+        // extract public id of the old image from the url is it exists;
+        if(user.photoUrl){
+            const publicId = user.photoUrl.split("/").pop().split(".")[0]; // extract public id
+            deleteMediaFromCloudinary(publicId);
+        }
+
+        // upload new photo
+        const cloudResponse = await uploadMedia(profilePhoto.path);
+        const photoUrl = cloudResponse.secure_url;
+
+        const updatedData = {name, photoUrl};
+        const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {new:true}).select("-password");
+
+        return res.status(200).json({
+            success:true,
+            user:updatedUser,
+            message:"Profile updated successfully."
+        })
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:false,
+            message:"Failed to update profile"
+        })
+    }
+}
