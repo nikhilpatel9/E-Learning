@@ -12,7 +12,7 @@ import {
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import DarkMode from "@/DarkMode";
+
 import {
   Sheet,
   SheetClose,
@@ -28,6 +28,7 @@ import { useLogoutUserMutation, useLoadUserQuery } from "@/features/api/authApi"
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { userLoggedIn, userLoggedOut } from "@/features/authSlice";
+import DarkMode from "@/DarkMode";
 
 const Navbar = () => {
   const dispatch = useDispatch();

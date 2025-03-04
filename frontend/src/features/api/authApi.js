@@ -38,8 +38,12 @@ export const authApi = createApi({
                 url: "logout",
                 method: "GET"
             }),
-            async onQueryStarted(_, { dispatch }) {
-                dispatch(userLoggedOut());
+            async onQueryStarted(_, { dispatch}) {
+                try { 
+                    dispatch(userLoggedOut());
+                } catch (error) {
+                    console.log(error);
+                }
             }
         }),
         googleLogin: builder.mutation({
@@ -73,12 +77,20 @@ export const authApi = createApi({
         }),
         
         loadUser: builder.query({
-            query: (user) => ({
+            query: () => ({
                 url: "profile",
                 method: "GET",
-                credentials:"include",
-                body : user
-            })
+                
+               
+            }),
+            async onQueryStarted(_, {queryFulfilled, dispatch}) {
+                try {
+                    const result = await queryFulfilled;
+                    dispatch(userLoggedIn({user:result.data.user}));
+                } catch (error) {
+                    console.log(error);
+                }
+            }
         }),
         updateUser: builder.mutation({
             query: (formData) => ({
