@@ -9,6 +9,7 @@ import Profile from "./pages/student/Profile";
 import Sidebar from "./pages/admin/lecture/Sidebar";
 import Dashboard from "./pages/admin/lecture/Dashboard";
 import CourseTable from "./pages/admin/Course/CourseTable";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 
 
@@ -69,7 +70,10 @@ const appRouter = createBrowserRouter([
 function App() {
   return (
     <main>
+      <ThemeProvider>
       <RouterProvider router={appRouter} />
+      </ThemeProvider>
+     
     </main>
   );
 }
