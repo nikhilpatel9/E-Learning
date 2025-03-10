@@ -10,6 +10,7 @@ import Sidebar from "./pages/admin/lecture/Sidebar";
 import Dashboard from "./pages/admin/lecture/Dashboard";
 import CourseTable from "./pages/admin/Course/CourseTable";
 import { ThemeProvider } from "./components/ThemeProvider";
+import AddCourse from "./pages/admin/Course/AddCourse";
 
 
 
@@ -59,6 +60,9 @@ const appRouter = createBrowserRouter([
             element: (
               <CourseTable/>
             ),
+          },{
+            path: "course/create",
+            element: <AddCourse />,
           }
         ]
       }
