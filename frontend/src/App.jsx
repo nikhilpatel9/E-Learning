@@ -11,6 +11,8 @@ import Dashboard from "./pages/admin/lecture/Dashboard";
 import CourseTable from "./pages/admin/Course/CourseTable";
 import { ThemeProvider } from "./components/ThemeProvider";
 import AddCourse from "./pages/admin/Course/AddCourse";
+import EditCourse from "./pages/admin/Course/EditCourse";
+import CreateLecture from "./pages/admin/lecture/CreateLecture";
 
 
 
@@ -27,6 +29,9 @@ const appRouter = createBrowserRouter([
             <Courses/>
           </>
         ),
+      },{
+        path: "courses",
+        element: <Courses/>
       },
       {
         path: "login",
@@ -63,7 +68,13 @@ const appRouter = createBrowserRouter([
           },{
             path: "course/create",
             element: <AddCourse />,
-          }
+          },{
+            path: "course/:courseId",
+            element:<EditCourse />,
+          }, {
+            path: "course/:courseId/lecture",
+            element: <CreateLecture />,
+          },
         ]
       }
       

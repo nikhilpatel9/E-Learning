@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, PlayCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   return (
     <div className="relative bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-gray-900 dark:to-gray-800 py-24 px-4 text-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-600/10 dark:from-gray-900/20 dark:to-gray-800/20 pointer-events-none"></div>
@@ -38,6 +40,7 @@ const HeroSection = () => {
           
           <div className="flex justify-center space-x-4">
             <Button 
+              onClick={()=> navigate(`courses`)}
               className="bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300 px-6 py-3"
             >
               Explore Courses
