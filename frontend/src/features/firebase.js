@@ -9,6 +9,8 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+
+
  
 
 const app = initializeApp(firebaseConfig);
@@ -25,6 +27,7 @@ googleProvider.setCustomParameters({
 export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider, browserPopupRedirectResolver);
+    //console.log(result.user.displayName)
     return {
       success: true,
       user: {
@@ -32,7 +35,9 @@ export const signInWithGoogle = async () => {
         email: result.user.email,
         photoUrl: result.user.photoURL
       }
+      
     };
+    
   } catch (error) {
     console.error("Google Sign In Error:", error);
     if (error.code === 'auth/popup-blocked') {

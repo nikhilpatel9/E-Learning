@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Edit, UserCircle, Mail, Crown } from "lucide-react";
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Course from "./Course";
 import {
   useLoadUserQuery,
@@ -37,6 +37,13 @@ const Profile = () => {
     },
   ] = useUpdateUserMutation();
 
+  // Add this useEffect to set initial name
+  useEffect(() => {
+    if (data && data.user) {
+      setName(data.user.name || "");
+    }
+  }, [data]);
+
   const onChangeHandler = (e) => {
     const file = e.target.files?.[0];
     if (file) setProfilePhoto(file);
@@ -45,7 +52,9 @@ const Profile = () => {
   const updateUserHandler = async () => {
     const formData = new FormData();
     formData.append("name", name);
-    formData.append("profilePhoto", profilePhoto);
+    if (profilePhoto) {
+      formData.append("profilePhoto", profilePhoto);
+    }
     await updateUser(formData);
   };
 
@@ -56,12 +65,12 @@ const Profile = () => {
   useEffect(() => {
     if (isSuccess) {
       refetch();
-      toast.success(data.message || "Profile updated.");
+      toast.success(updateUserData?.message || "Profile updated.");
     }
     if (isError) {
-      toast.error(error.message || "Failed to update profile");
+      toast.error(error?.message || "Failed to update profile");
     }
-  }, [error, updateUserData, isSuccess, isError]);
+  }, [error, updateUserData, isSuccess, isError, refetch]);
 
   if (isLoading) return (
     <div className="flex justify-center items-center min-h-screen">

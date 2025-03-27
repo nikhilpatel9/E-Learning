@@ -120,7 +120,7 @@ export const googleLogin = async (req, res) => {
         let user = await User.findOne({ email });
         const randomPassword = Math.random().toString(36).slice(-8);
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
-
+        
         if (!user) {
             user = await User.create({
                 name,
@@ -129,7 +129,7 @@ export const googleLogin = async (req, res) => {
                 password: hashedPassword
             });
         }
-        generateToken(res, user, `Welcome ${user.name}`);
+        generateToken(res, user, `Welcome ${name}`);
         
     } catch (error) {
         console.log(error);
@@ -142,10 +142,10 @@ export const googleLogin = async (req, res) => {
 export const getUserProfile = async (req,res) => {
     try {
        // console.log("Loading user profile", req)
-        //const user = await User.findById(req._id);
+       // const user = await User.findById(req._id);
         const userId = req.id;
         const user = await User.findById(userId).select("-password");
-        
+       
         if(!user){
             return res.status(404).json({
                 message:"Profile not found",
