@@ -21,7 +21,7 @@ const PDFQuizGenerator = () => {
       const response = await axios.post(
         "https://api.pdf.co/v1/pdf/convert/to/text",
         { url },
-        { headers: { "x-api-key": import.meta.env.REACT_APP_PDFCO_API_KEY } }
+        { headers: { "x-api-key": import.meta.env.VITE_PDFCO_API_KEY } }
       );
       return response.data.body;
     } catch (err) {
@@ -42,7 +42,7 @@ const PDFQuizGenerator = () => {
           n: 1,
         },
         {
-          headers: { Authorization: `Bearer ${import.meta.env.REACT_APP_OPENAI_API_KEY}` },
+          headers: { Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}` },
         }
       );
       return JSON.parse(response.data.choices[0].text);
