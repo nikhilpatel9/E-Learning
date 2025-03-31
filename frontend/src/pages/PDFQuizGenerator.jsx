@@ -1,172 +1,114 @@
-/* eslint-disable no-unused-vars */
-import  { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { useGenerateQuizFromCourseDocMutation } from '@/features/api/courseApi';
 import { Button } from "@/components/ui/button";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import axios from "axios";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, FileText, Eye } from "lucide-react";
+import { useState } from "react";
 
+const PDFQuizGenerator = ( course ) => {
+  const [generateQuiz, { isLoading, error, data }] = useGenerateQuizFromCourseDocMutation();
+  const [showResult, setShowResult] = useState(false);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  course = course?.course;
 
-const PDFQuizGenerator = () => {
-  const [pdfLink, setPdfLink] = useState("");
-  const [quiz, setQuiz] = useState([]);
-  const [userAnswers, setUserAnswers] = useState({});
-  const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [score, setScore] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const extractTextFromPDF = async (url) => {
+  const handleGenerate = async () => {
     try {
-      const response = await axios.post(
-        "https://api.pdf.co/v1/pdf/convert/to/text",
-        { url },
-        { headers: { "x-api-key": import.meta.env.VITE_PDFCO_API_KEY } }
-      );
-      return response.data.body;
+      await generateQuiz(course._id).unwrap();
+      setShowResult(true);
     } catch (err) {
-      setError("Failed to extract text from PDF. Please check the link.");
-      return "";
-    }
-  };
-  
-  const generateQuiz = async (text) => {
-    try {
-      const response = await axios.post(
-        "https://api.openai.com/v1/completions",
-        {
-          model: "gpt-4",
-          prompt: `Generate a 10-question multiple-choice quiz from the following text:\n${text}\nEach question should have 4 answer options, with one correct answer indicated. Return the quiz in JSON format.`,
-          max_tokens: 500,
-          temperature: 0.7,
-          n: 1,
-        },
-        {
-          headers: { Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}` },
-        }
-      );
-      return JSON.parse(response.data.choices[0].text);
-    } catch (err) {
-      setError("Failed to generate quiz. Please try again.");
-      return [];
+      console.error('Failed to generate quiz:', err);
     }
   };
 
-  const handlePDFUpload = async () => {
-    if (!pdfLink) return;
-    setIsLoading(true);
-    setError(null);
-    
-    const extractedText = await extractTextFromPDF(pdfLink);
-    if (!extractedText) {
-      setIsLoading(false);
-      return;
-    }
-    
-    const generatedQuiz = await generateQuiz(extractedText);
-    setQuiz(generatedQuiz);
-    setIsLoading(false);
-  };
-
-  const handleAnswerSelect = (questionId, optionIndex) => {
-    if (quizSubmitted) return;
-    setUserAnswers((prev) => ({ ...prev, [questionId]: optionIndex }));
-  };
-
-  const submitQuiz = () => {
-    let correctCount = 0;
-    quiz.forEach((q) => {
-      if (userAnswers[q.id] === q.correctAnswer) correctCount++;
-    });
-    setScore(correctCount);
-    setQuizSubmitted(true);
-  };
+  if (!course.courseDocument) {
+    return (
+      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg shadow-sm">
+        <p className="text-yellow-800 dark:text-yellow-400 font-medium flex items-center">
+          <FileText className="w-5 h-5 mr-2 text-yellow-600 dark:text-yellow-500" />
+          No PDF document available for this course.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>PDF Quiz Generator</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-4">
-            <Input 
-              type="text" 
-              placeholder="Enter PDF download link" 
-              value={pdfLink}
-              onChange={(e) => setPdfLink(e.target.value)}
-              className="mb-2"
-            />
-            <Button 
-              onClick={handlePDFUpload} 
+    <Card className="bg-white dark:bg-gray-900 shadow-lg">
+      <CardHeader>
+        <CardTitle className="text-gray-800 dark:text-gray-200">Course Document & Quiz Generator</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          {/* PDF Document Preview Section */}
+          <div className="p-4 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-3">
+                <FileText className="text-red-500 dark:text-red-400" />
+                <span className="font-medium truncate max-w-xs text-gray-800 dark:text-gray-300">
+                  Course Document
+                </span>
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => setShowPdfPreview(!showPdfPreview)}
+                className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+              >
+                <Eye className="w-4 h-4 mr-1" />
+                {showPdfPreview ? "Hide Preview" : "View PDF"}
+              </Button>
+            </div>
+            
+            {showPdfPreview && (
+              <div className="mt-3 border rounded-md overflow-hidden border-gray-300 dark:border-gray-600">
+                <iframe 
+                  src={course.courseDocument} 
+                  title="Document Preview"
+                  className="w-full h-96 border-0"
+                ></iframe>
+              </div>
+            )}
+          </div>
+
+          {/* Quiz Generation Section */}
+          <div className="flex items-center">
+            <Button
+              onClick={handleGenerate}
               disabled={isLoading}
-              className="w-full"
+              className={`${
+                isLoading ? "bg-gray-400" : ""
+              }`}
             >
-              {isLoading ? 'Processing...' : 'Generate Quiz from PDF'}
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "Generate Quiz from PDF"
+              )}
             </Button>
           </div>
 
           {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {isLoading && (
-            <div className="text-center text-gray-500">
-              Extracting text and generating quiz... Please wait.
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg shadow-sm">
+              <p className="text-red-700 dark:text-red-400 font-medium">
+                {error.data?.message || 'Failed to generate quiz'}
+              </p>
             </div>
           )}
 
-          {quiz.length > 0 && (
-            <div>
-              {quiz.map((q) => (
-                <div key={q.id} className="mb-4 p-3 border rounded">
-                  <p className="font-semibold mb-2">{q.question}</p>
-                  {q.options.map((option, index) => (
-                    <div 
-                      key={index} 
-                      onClick={() => handleAnswerSelect(q.id, index)}
-                      className={`p-2 border rounded mb-1 cursor-pointer 
-                        ${quizSubmitted 
-                          ? (index === q.correctAnswer 
-                            ? 'bg-green-100' 
-                            : userAnswers[q.id] === index 
-                              ? 'bg-red-100' 
-                              : '')
-                          : (userAnswers[q.id] === index 
-                            ? 'bg-blue-100' 
-                            : 'hover:bg-gray-100')
-                        }`}
-                    >
-                      {option}
-                    </div>
-                  ))}
-                </div>
-              ))}
-
-              <Button 
-                onClick={submitQuiz} 
-                disabled={Object.keys(userAnswers).length !== quiz.length}
-                className="w-full mt-4"
-              >
-                Submit Quiz
-              </Button>
-
-              {quizSubmitted && (
-                <Alert className="mt-4">
-                  <AlertTitle>Quiz Results</AlertTitle>
-                  <AlertDescription>
-                    You scored {score} out of {quiz.length}
-                  </AlertDescription>
-                </Alert>
-              )}
+          {data?.quiz && showResult && (
+            <div className="mt-4 space-y-3">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Generated Quiz</h3>
+              <div className="p-4 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <pre className="whitespace-pre-wrap text-gray-800 dark:text-gray-300 text-sm">
+                  {data.quiz}
+                </pre>
+              </div>
             </div>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

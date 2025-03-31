@@ -1,6 +1,6 @@
 import express from "express";
 import upload from "../utils/multer.js";
-import { createCourse, editCourse, getCourseById, getCreatorCourses, searchCourse } from "../controllers/course.controller.js";
+import { createCourse, editCourse, generateQuizFromCourseDoc, getCourseById, getCreatorCourses, searchCourse } from "../controllers/course.controller.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 
 
@@ -18,4 +18,8 @@ router.route("/:courseId").put(
     editCourse
   );
 router.route("/:courseId").get(isAuthenticated, getCourseById);
+router.post(
+  "/:courseId/generate-quiz",
+  generateQuizFromCourseDoc
+);
 export default router;

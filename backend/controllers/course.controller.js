@@ -106,6 +106,73 @@ export const getCreatorCourses = async (req,res) => {
         })
     }
 }
+
+// controllers/course.controller.js
+
+
+
+
+import axios from 'axios';
+
+import { PDFDocument } from 'pdf-lib';
+const pdf = (await import('pdf-parse/lib/pdf-parse.js')).default;
+
+export const generateQuizFromCourseDoc = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
+    if (!course.courseDocument) return res.status(400).json({ success: false, message: 'No PDF document available' });
+
+    // Download and parse PDF
+    const response = await axios.get(course.courseDocument, { responseType: 'arraybuffer' });
+    
+    const data = await pdf(response.data);
+   
+    const limitedText = data.text.slice(0, 4000);
+    
+    // Generate quiz
+    const openaiResponse = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-3.5-turbo',
+        messages: [{
+          role: 'system',
+          content: 'Generate 10 MCQs with 4 options each. Format: Q1. Question\nA) Opt1\nB) Opt2\nC) Opt3\nD) Opt4\n*Correct: B'
+        }, {
+          role: 'user',
+          content: `Text: ${limitedText}`
+        }],
+        temperature: 0.7,
+        max_tokens: 1500
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        }
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      quiz: openaiResponse.data.choices[0].message.content
+    });
+
+  } catch (error) {
+  
+    res.status(500).json({
+      success: false,
+      message: error.response?.status === 404 
+        ? 'PDF not found at URL' 
+        : 'OpenAI API rate limit exceeded. Please try again later.',
+      error: error.message
+    });
+  }
+};
+
+// Keep all your other controller methods...
 export const editCourse = async (req, res) => {
     try {
         const courseId = req.params.courseId;

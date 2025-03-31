@@ -13,6 +13,7 @@
   "description": "",
   "dependencies": {
     "@reduxjs/toolkit": "^2.5.1",
+    "axios": "^1.8.4",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
@@ -28,6 +29,8 @@
     "nodemon": "^3.1.9",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^1.1.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
     "sonner": "^1.7.4"

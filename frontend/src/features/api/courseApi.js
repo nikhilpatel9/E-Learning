@@ -45,6 +45,13 @@ export const courseApi = createApi({
         method: "PATCH",
       }),
     }),
+    generateQuizFromCourseDoc: builder.mutation({
+      query:( courseId ) => ({
+        url: `/${courseId}/generate-quiz`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Refetch_Quiz"],
+    }),
   }),
 });
 export const {
@@ -53,4 +60,5 @@ export const {
   useEditCourseMutation,
   useGetCourseByIdQuery,
   usePublishCourseMutation,
+  useGenerateQuizFromCourseDocMutation,
 } = courseApi;

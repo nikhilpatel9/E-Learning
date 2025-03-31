@@ -126,6 +126,7 @@ const CourseTab = () => {
     }
 
     await editCourse({ formData, courseId });
+    navigate("/admin/course/courseId/lecture")
   };
 
   const publishStatusHandler = async (action) => {
