@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, FileText, Eye } from "lucide-react";
 import { useState } from "react";
+import PDFToQuizGenerator from '@/PDFToQuizGenerator';
 
 const PDFQuizGenerator = ( course ) => {
   const [generateQuiz, { isLoading, error, data }] = useGenerateQuizFromCourseDocMutation();
@@ -97,16 +98,12 @@ const PDFQuizGenerator = ( course ) => {
           )}
 
           {data?.quiz && showResult && (
-            <div className="mt-4 space-y-3">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Generated Quiz</h3>
-              <div className="p-4 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                <pre className="whitespace-pre-wrap text-gray-800 dark:text-gray-300 text-sm">
-                  {data.quiz}
-                </pre>
-              </div>
-            </div>
-          )}
-        </div>
+                      <div className="mt-4 space-y-3">
+                        {/* Replace the old quiz display with the new interactive component */}
+                        <PDFToQuizGenerator quizText={data.quiz} />
+                      </div>
+                    )}
+                  </div>
       </CardContent>
     </Card>
   );

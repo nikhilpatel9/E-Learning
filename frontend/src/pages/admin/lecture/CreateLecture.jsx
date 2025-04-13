@@ -2,6 +2,7 @@
 
 import { useGetCourseByIdQuery } from "@/features/api/courseApi";
 import PDFQuizGenerator from "@/pages/PDFQuizGenerator";
+
 import { Loader2 } from "lucide-react"
 
 import {  useParams } from "react-router-dom";
@@ -21,8 +22,12 @@ export default function CreateLecture() {
     refetch();
   }
   return (
+    <>
     <PDFQuizGenerator  course={course} 
       />
+    
+    </>
+    
     //<div>CreateLecture</div>
   )
 }
