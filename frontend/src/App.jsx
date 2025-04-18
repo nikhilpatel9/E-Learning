@@ -13,6 +13,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import AddCourse from "./pages/admin/Course/AddCourse";
 import EditCourse from "./pages/admin/Course/EditCourse";
 import CreateLecture from "./pages/admin/lecture/CreateLecture";
+import EditLecture from "./pages/admin/lecture/EditLecture";
 
 
 
@@ -74,6 +75,9 @@ const appRouter = createBrowserRouter([
           }, {
             path: "course/:courseId/lecture",
             element: <CreateLecture />,
+          },{
+            path: "course/:courseId/lecture/:lectureId",
+            element: <EditLecture />,
           },
         ]
       }
