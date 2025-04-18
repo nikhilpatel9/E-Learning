@@ -1,16 +1,24 @@
-import { useGenerateQuizFromCourseDocMutation } from '@/features/api/courseApi';
+import { useGenerateQuizFromCourseDocMutation, useGetCourseByIdQuery } from '@/features/api/courseApi';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, FileText, Eye } from "lucide-react";
 import { useState } from "react";
 import PDFToQuizGenerator from '@/PDFToQuizGenerator';
 
-const PDFQuizGenerator = ( course ) => {
+// eslint-disable-next-line react/prop-types
+const PDFQuizGenerator = ( {courseId} ) => {
   const [generateQuiz, { isLoading, error, data }] = useGenerateQuizFromCourseDocMutation();
   const [showResult, setShowResult] = useState(false);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
-  course = course?.course;
-
+  const { data: courseByIdData, isLoading: courseByIdLoading } =
+  useGetCourseByIdQuery(courseId);
+  if (courseByIdLoading) return (
+    <div className="flex items-center justify-center h-screen">
+      <Loader2 className="animate-spin h-8 w-8 text-gray-600 dark:text-gray-300" />
+    </div>
+  );
+  const course = courseByIdData?.course;
+  
   const handleGenerate = async () => {
     try {
       await generateQuiz(course._id).unwrap();

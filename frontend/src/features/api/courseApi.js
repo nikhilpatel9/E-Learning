@@ -33,9 +33,16 @@ export const courseApi = createApi({
       }),
       invalidatesTags: ["Refetch_Creator_Course"],
     }),
+    
     getCourseById: builder.query({
       query: (courseId) => ({
         url: `/${courseId}`,
+        method: "GET",
+      }),
+    }),
+    getPublishedCourse: builder.query({
+      query: () => ({
+        url: "/published-courses",
         method: "GET",
       }),
     }),
@@ -52,6 +59,20 @@ export const courseApi = createApi({
       }),
       invalidatesTags: ["Refetch_Quiz"],
     }),
+    createLecture: builder.mutation({
+      query: ({ lectureTitle, courseId }) => ({
+        url: `/${courseId}/lecture`,
+        method: "POST",
+        body: { lectureTitle },
+      }),
+    }),
+    getCourseLecture: builder.query({
+      query: (courseId) => ({
+        url: `/${courseId}/lecture`,
+        method: "GET",
+      }),
+      providesTags: ["Refetch_Lecture"],
+    }),
   }),
 });
 export const {
@@ -61,4 +82,7 @@ export const {
   useGetCourseByIdQuery,
   usePublishCourseMutation,
   useGenerateQuizFromCourseDocMutation,
+  useGetPublishedCourseQuery,
+  useCreateLectureMutation,
+  useGetCourseLectureQuery,
 } = courseApi;

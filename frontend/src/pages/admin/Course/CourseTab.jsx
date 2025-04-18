@@ -42,6 +42,8 @@ const CourseTab = () => {
 
   const params = useParams();
   const courseId = params.courseId;
+  
+  
   const { data: courseByIdData, isLoading: courseByIdLoading, refetch } =
     useGetCourseByIdQuery(courseId);
 
@@ -50,14 +52,18 @@ const CourseTab = () => {
  
   useEffect(() => {
     if (courseByIdData?.course) { 
+      
       const course = courseByIdData?.course;
+      
+      // Force course.coursePrice to be a string
+     
       setInput({
-        courseTitle: course.courseTitle,
-        subTitle: course.subTitle,
-        description: course.description,
-        category: course.category,
-        courseLevel: course.courseLevel,
-        coursePrice: course.coursePrice,
+        courseTitle: course.courseTitle || "",
+        subTitle: course.subTitle || "",
+        description: course.description || "",
+        category: course.category || "",
+        courseLevel: course.courseLevel || "",
+        coursePrice: course.coursePrice ,
         courseThumbnail: "",
         courseDocument: null,
       });
@@ -75,21 +81,22 @@ const CourseTab = () => {
 
   const changeEventHandler = (e) => {
     const { name, value } = e.target;
-    setInput({ ...input, [name]: value });
+    console.log(`Updating ${name} to: ${value}`);
+    setInput(prev => ({ ...prev, [name]: value }));
   };
 
   const selectCategory = (value) => {
-    setInput({ ...input, category: value });
+    setInput(prev => ({ ...prev, category: value }));
   };
   
   const selectCourseLevel = (value) => {
-    setInput({ ...input, courseLevel: value });
+    setInput(prev => ({ ...prev, courseLevel: value }));
   };
   
   const selectThumbnail = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      setInput({ ...input, courseThumbnail: file });
+      setInput(prev => ({ ...prev, courseThumbnail: file }));
       const fileReader = new FileReader();
       fileReader.onloadend = () => setPreviewThumbnail(fileReader.result);
       fileReader.readAsDataURL(file);
@@ -99,7 +106,7 @@ const CourseTab = () => {
   const selectDocument = (e) => {
     const file = e.target.files?.[0];
     if (file && file.type === "application/pdf") {
-      setInput({ ...input, courseDocument: file });
+      setInput(prev => ({ ...prev, courseDocument: file }));
       setDocumentFileName(file.name);
       const pdfUrl = URL.createObjectURL(file);
       setDocumentPreviewUrl(pdfUrl);
@@ -109,35 +116,45 @@ const CourseTab = () => {
   };
 
   const updateCourseHandler = async () => {
-    const formData = new FormData();
-    formData.append("courseTitle", input.courseTitle);
-    formData.append("subTitle", input.subTitle);
-    formData.append("description", input.description);
-    formData.append("category", input.category);
-    formData.append("courseLevel", input.courseLevel);
-    formData.append("coursePrice", input.coursePrice);
-    
-    if (input.courseThumbnail) {
-      formData.append("courseThumbnail", input.courseThumbnail);
-    }
-    
-    if (input.courseDocument) {
-      formData.append("courseDocument", input.courseDocument);
-    }
+    try {
+      console.log("Updating course with ID:", courseId);
+      
+      const formData = new FormData();
+      formData.append("courseTitle", input.courseTitle);
+      formData.append("subTitle", input.subTitle);
+      formData.append("description", input.description);
+      formData.append("category", input.category);
+      formData.append("courseLevel", input.courseLevel);
+      formData.append("coursePrice", input.coursePrice);
+      
+      if (input.courseThumbnail) {
+        formData.append("courseThumbnail", input.courseThumbnail);
+      }
+      
+      if (input.courseDocument) {
+        formData.append("courseDocument", input.courseDocument);
+      }
 
-    await editCourse({ formData, courseId });
-    navigate("/admin/course/courseId/lecture")
+      await editCourse({ formData, courseId });
+      
+      // IMPORTANT: Use the dynamic courseId in the navigation path
+      navigate(`/admin/course/${courseId}/lecture`);
+    } catch (err) {
+      console.error("Error updating course:", err);
+      toast.error("An error occurred while updating the course.");
+    }
   };
 
   const publishStatusHandler = async (action) => {
     try {
+      console.log("Publishing status change for course ID:", courseId);
       const response = await publishCourse({courseId, query: action});
       if (response.data) {
         refetch();
         toast.success(response.data.message);
       }
-    // eslint-disable-next-line no-unused-vars
     } catch (error) {
+      console.error("Error changing publish status:", error);
       toast.error("Failed to publish or unpublish course");
     }
   };
@@ -176,12 +193,12 @@ const CourseTab = () => {
         </div>
         <div className="space-x-2 flex items-center">
           <Button 
-            disabled={courseByIdData?.course.lectures.length === 0} 
+            disabled={courseByIdData?.course?.lectures?.length === 0} 
             variant="outline" 
-            onClick={() => publishStatusHandler(courseByIdData?.course.isPublished ? "false" : "true")}
+            onClick={() => publishStatusHandler(courseByIdData?.course?.isPublished ? "false" : "true")}
             className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
           >
-            {courseByIdData?.course.isPublished ? "Unpublish" : "Publish"}
+            {courseByIdData?.course?.isPublished ? "Unpublish" : "Publish"}
           </Button>
           <Button className="bg-red-600 hover:bg-red-700 text-white">
             Remove Course
@@ -193,6 +210,7 @@ const CourseTab = () => {
           <div>
             <Label className="text-gray-700 dark:text-gray-300">Title</Label>
             <Input
+              
               type="text"
               name="courseTitle"
               value={input.courseTitle}
@@ -204,6 +222,7 @@ const CourseTab = () => {
           <div>
             <Label className="text-gray-700 dark:text-gray-300">Subtitle</Label>
             <Input
+             
               type="text"
               name="subTitle"
               value={input.subTitle}
@@ -220,6 +239,7 @@ const CourseTab = () => {
             <div>
               <Label className="text-gray-700 dark:text-gray-300">Category</Label>
               <Select
+                key={`category-${input.category}`}
                 value={input.category}
                 onValueChange={selectCategory}
               >
@@ -246,6 +266,7 @@ const CourseTab = () => {
             <div>
               <Label className="text-gray-700 dark:text-gray-300">Course Level</Label>
               <Select
+                
                 value={input.courseLevel}
                 onValueChange={selectCourseLevel}
               >
@@ -265,6 +286,7 @@ const CourseTab = () => {
             <div>
               <Label className="text-gray-700 dark:text-gray-300">Price in (INR)</Label>
               <Input
+                
                 type="number"
                 name="coursePrice"
                 value={input.coursePrice}
