@@ -1,61 +1,73 @@
-/* eslint-disable react/prop-types */
 import { createContext, useContext, useEffect, useState } from "react";
 
-const initialState = {
-  theme: "system",
-  setTheme: () => null,
-};
+// Create context
+const ThemeContext = createContext(null);
 
-const ThemeProviderContext = createContext(initialState);
-
-export function ThemeProvider({
-  children,
-  defaultTheme = "system",
-  storageKey = "vite-ui-theme",
-  ...props
-}) {
-  const [theme, setTheme] = useState(
-    () => localStorage.getItem(storageKey) || defaultTheme
-  );
-
+// eslint-disable-next-line react/prop-types
+export function ThemeProvider({ children }) {
+  // Get initial theme from localStorage or default to light
+  const [theme, setTheme] = useState('');
+  
+  // Initialize theme on component mount
   useEffect(() => {
-    const root = window.document.documentElement;
-
-    root.classList.remove("light", "dark");
-
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-
-      root.classList.add(systemTheme);
-      return;
+    // Check for stored theme first
+    const storedTheme = localStorage.getItem('theme');
+    
+    if (storedTheme) {
+      // Apply stored theme
+      setTheme(storedTheme);
+    } else {
+      // No stored preference, check system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initialTheme = prefersDark ? 'dark' : 'light';
+      setTheme(initialTheme);
+      localStorage.setItem('theme', initialTheme);
     }
-
-    root.classList.add(theme);
+  }, []);
+  
+  // Apply theme changes to document
+  useEffect(() => {
+    // Early return if theme isn't initialized yet
+    if (!theme) return;
+    
+    const root = document.documentElement;
+    
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('theme', theme);
   }, [theme]);
-
+  
+  // Theme toggle function
+  const toggleTheme = () => {
+    setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
+  };
+  
+  // Context value
   const value = {
     theme,
-    setTheme: (theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
-    },
+    setTheme,
+    toggleTheme
   };
-
+  
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
+    <ThemeContext.Provider value={value}>
       {children}
-    </ThemeProviderContext.Provider>
+    </ThemeContext.Provider>
   );
 }
 
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
-
-  if (context === undefined)
+// Custom hook to use theme
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  
+  if (context === null) {
     throw new Error("useTheme must be used within a ThemeProvider");
-
+  }
+  
   return context;
-};
+}
