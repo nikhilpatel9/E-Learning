@@ -1,9 +1,12 @@
 
+import { Button } from "@/components/ui/button";
 import Course from "./Course";
+import { useNavigate } from "react-router-dom";
 
 export default function MyLearning() {
+    const navigate =useNavigate();
     const isLoading = false;
-    const myLearning = [1,2];
+    const myLearning = [];
     return (
       <div className="max-w-4xl mx-auto my-10 px-4 md:px-0">
         <h1 className="font-bold text-2xl text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-3">
@@ -31,12 +34,12 @@ export default function MyLearning() {
               <p className="text-gray-600 dark:text-gray-300 text-lg">
                 You are not enrolled in any courses yet.
               </p>
-              <button 
+              <Button 
                 className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
-                onClick={() => {/* Navigate to courses */}}
+                onClick={()=> navigate(`/courses`)}
               >
                 Explore Courses
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">

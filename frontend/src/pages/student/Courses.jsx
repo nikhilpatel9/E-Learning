@@ -1,9 +1,13 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import Course from "./Course";
+import { useGetPublishedCourseQuery } from "@/features/api/courseApi";
 
 const Courses = () => {
-  const isLoading = false;
-  const courses = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  const { data, isLoading, isError } = useGetPublishedCourseQuery();
+  console.log('====================================');
+  console.log(data);
+  console.log('====================================');
+  if (isError) return <h1>Some error occurred while fetching courses.</h1>;
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 py-12 transition-all duration-300">
@@ -11,12 +15,16 @@ const Courses = () => {
         <h2 className="text-4xl font-extrabold text-center text-gray-900 dark:text-white mb-10 transition-colors">
           Explore Our <span className="text-blue-600 dark:text-blue-400">Courses</span>
         </h2>
-        
+
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {isLoading ? (
-            Array.from({ length: 8 }).map((_, index) => <CourseSkeleton key={index} />)
+            Array.from({ length: 8 }).map((_, index) => (
+              <CourseSkeleton key={index} />
+            ))
           ) : (
-            courses.map((course, index) => <Course key={index} />)
+            data?.courses?.map((course, index) => (
+              <Course key={index} course={course} />
+            ))
           )}
         </div>
       </div>
@@ -31,11 +39,11 @@ const CourseSkeleton = () => {
     <div className="bg-white dark:bg-gray-800 shadow-md hover:shadow-xl dark:shadow-gray-700 transition-shadow rounded-xl overflow-hidden">
       {/* Course Thumbnail Skeleton */}
       <Skeleton className="w-full h-44 bg-gray-200 dark:bg-gray-700" />
-      
+
       <div className="px-6 py-5 space-y-4">
         {/* Title Skeleton */}
         <Skeleton className="h-6 w-3/4 bg-gray-300 dark:bg-gray-600" />
-        
+
         {/* Instructor & Price */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -44,7 +52,7 @@ const CourseSkeleton = () => {
           </div>
           <Skeleton className="h-5 w-16 bg-gray-300 dark:bg-gray-600" />
         </div>
-        
+
         {/* Course Duration */}
         <Skeleton className="h-4 w-1/3 bg-gray-300 dark:bg-gray-600" />
       </div>

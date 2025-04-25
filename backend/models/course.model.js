@@ -19,10 +19,12 @@ const courseSchema = new mongoose.Schema({
         type:Number
     },
     courseThumbnail:{
-        type:String
+        type:String,
+        default:"https://miro.medium.com/v2/resize:fit:1400/1*tt9EnHszPzpURR9mKRi8gA.jpeg"
     },
     courseDocument:{
         type:String
+        
     },
     enrolledStudents:[
         {

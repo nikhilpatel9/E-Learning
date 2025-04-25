@@ -43,38 +43,46 @@ const CourseTab = () => {
   const params = useParams();
   const courseId = params.courseId;
   
-  
   const { data: courseByIdData, isLoading: courseByIdLoading, refetch } =
     useGetCourseByIdQuery(courseId);
 
   // eslint-disable-next-line no-empty-pattern
   const [publishCourse, {}] = usePublishCourseMutation();
  
+  const [previewThumbnail, setPreviewThumbnail] = useState("");
+  const [documentPreviewUrl, setDocumentPreviewUrl] = useState("");
+  const [documentFileName, setDocumentFileName] = useState("");
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const navigate = useNavigate();
+
+  // Initialize data from API response
   useEffect(() => {
     if (courseByIdData?.course) { 
-      
       const course = courseByIdData?.course;
       
-      // Force course.coursePrice to be a string
-     
       setInput({
         courseTitle: course.courseTitle || "",
         subTitle: course.subTitle || "",
         description: course.description || "",
         category: course.category || "",
         courseLevel: course.courseLevel || "",
-        coursePrice: course.coursePrice ,
-        courseThumbnail: "",
+        coursePrice: course.coursePrice,
+        courseThumbnail: course.courseThumbnail|| " ",
         courseDocument: null,
       });
+      
+      // If there's a thumbnail URL in the course data, set it as preview
+      if (course.courseThumbnail) {
+        setPreviewThumbnail(course.courseThumbnail);
+      }
+      
+      // If there's a document URL
+      if (course.documentUrl) {
+        setDocumentPreviewUrl(course.documentUrl);
+        setDocumentFileName(course.documentUrl.split('/').pop() || "Course Document");
+      }
     }
   }, [courseByIdData]);
-
-  const [previewThumbnail, setPreviewThumbnail] = useState("");
-  const [documentPreviewUrl, setDocumentPreviewUrl] = useState("");
-  const [documentFileName, setDocumentFileName] = useState("");
-  const [showPdfPreview, setShowPdfPreview] = useState(false);
-  const navigate = useNavigate();
 
   const [editCourse, { data, isLoading, isSuccess, error }] =
     useEditCourseMutation();
@@ -93,15 +101,17 @@ const CourseTab = () => {
     setInput(prev => ({ ...prev, courseLevel: value }));
   };
   
-  const selectThumbnail = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setInput(prev => ({ ...prev, courseThumbnail: file }));
-      const fileReader = new FileReader();
-      fileReader.onloadend = () => setPreviewThumbnail(fileReader.result);
-      fileReader.readAsDataURL(file);
-    }
-  };
+  
+    const selectThumbnail = (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setInput({ ...input, courseThumbnail: file });
+        const fileReader = new FileReader();
+        fileReader.onloadend = () => setPreviewThumbnail(fileReader.result);
+        fileReader.readAsDataURL(file);
+      }
+    };
+
   
   const selectDocument = (e) => {
     const file = e.target.files?.[0];
@@ -115,11 +125,13 @@ const CourseTab = () => {
     }
   };
 
+  // Important function - fixed to properly handle thumbnail
   const updateCourseHandler = async () => {
     try {
-      console.log("Updating course with ID:", courseId);
       
       const formData = new FormData();
+      
+      // Append all the text fields
       formData.append("courseTitle", input.courseTitle);
       formData.append("subTitle", input.subTitle);
       formData.append("description", input.description);
@@ -127,6 +139,7 @@ const CourseTab = () => {
       formData.append("courseLevel", input.courseLevel);
       formData.append("coursePrice", input.coursePrice);
       
+      // Crucial part: Handle the thumbnail properly
       if (input.courseThumbnail) {
         formData.append("courseThumbnail", input.courseThumbnail);
       }
@@ -138,13 +151,12 @@ const CourseTab = () => {
       await editCourse({ formData, courseId });
       
       // IMPORTANT: Use the dynamic courseId in the navigation path
-      navigate(`/admin/course/${courseId}/lecture`);
+     // navigate(`/admin/course/${courseId}/lecture`);
     } catch (err) {
       console.error("Error updating course:", err);
       toast.error("An error occurred while updating the course.");
     }
   };
-
   const publishStatusHandler = async (action) => {
     try {
       console.log("Publishing status change for course ID:", courseId);
@@ -152,6 +164,10 @@ const CourseTab = () => {
       if (response.data) {
         refetch();
         toast.success(response.data.message);
+        navigate(`/admin/course/`);
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       }
     } catch (error) {
       console.error("Error changing publish status:", error);
@@ -164,13 +180,18 @@ const CourseTab = () => {
       toast.success(data.message || "Course updated successfully.");
     }
     if (error) {
-      toast.error(error.data?.message || "Failed to update course");
+      const errorMsg = typeof error.data?.message === 'string' 
+        ? error.data.message 
+        : 'Failed to update course';
+      console.error("API Error:", error);
+      toast.error(errorMsg);
     }
   }, [isSuccess, error, data]);
 
   useEffect(() => {
     return () => {
-      if (documentPreviewUrl) {
+      // Clean up any object URLs
+      if (documentPreviewUrl && documentPreviewUrl.startsWith('blob:')) {
         URL.revokeObjectURL(documentPreviewUrl);
       }
     };
@@ -210,7 +231,6 @@ const CourseTab = () => {
           <div>
             <Label className="text-gray-700 dark:text-gray-300">Title</Label>
             <Input
-              
               type="text"
               name="courseTitle"
               value={input.courseTitle}
@@ -222,7 +242,6 @@ const CourseTab = () => {
           <div>
             <Label className="text-gray-700 dark:text-gray-300">Subtitle</Label>
             <Input
-             
               type="text"
               name="subTitle"
               value={input.subTitle}
@@ -266,7 +285,6 @@ const CourseTab = () => {
             <div>
               <Label className="text-gray-700 dark:text-gray-300">Course Level</Label>
               <Select
-                
                 value={input.courseLevel}
                 onValueChange={selectCourseLevel}
               >
@@ -286,7 +304,6 @@ const CourseTab = () => {
             <div>
               <Label className="text-gray-700 dark:text-gray-300">Price in (INR)</Label>
               <Input
-                
                 type="number"
                 name="coursePrice"
                 value={input.coursePrice}
@@ -325,7 +342,10 @@ const CourseTab = () => {
                     alt="Course Thumbnail"
                   />
                   <button 
-                    onClick={() => setPreviewThumbnail("")} 
+                    onClick={() => {
+                      setPreviewThumbnail("");
+                      setInput(prev => ({...prev, courseThumbnail: null}));
+                    }} 
                     className="absolute top-2 right-2 p-1 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                   >
                     <X className="w-4 h-4" />
@@ -333,6 +353,11 @@ const CourseTab = () => {
                 </div>
               )}
             </div>
+            {previewThumbnail && !input.courseThumbnail && (
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                Using existing thumbnail. Upload a new one to replace it.
+              </p>
+            )}
           </div>
           
           {/* Enhanced PDF section */}
