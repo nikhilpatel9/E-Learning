@@ -67,7 +67,7 @@ const CourseTab = () => {
         category: course.category || "",
         courseLevel: course.courseLevel || "",
         coursePrice: course.coursePrice,
-        courseThumbnail: course.courseThumbnail|| " ",
+        courseThumbnail:"",
         courseDocument: null,
       });
       
@@ -106,6 +106,7 @@ const CourseTab = () => {
       const file = e.target.files?.[0];
       if (file) {
         setInput({ ...input, courseThumbnail: file });
+       
         const fileReader = new FileReader();
         fileReader.onloadend = () => setPreviewThumbnail(fileReader.result);
         fileReader.readAsDataURL(file);
@@ -127,6 +128,9 @@ const CourseTab = () => {
 
   // Important function - fixed to properly handle thumbnail
   const updateCourseHandler = async () => {
+    console.log('====================================');
+    console.log(input);
+    console.log('====================================');
     try {
       
       const formData = new FormData();
@@ -137,12 +141,8 @@ const CourseTab = () => {
       formData.append("description", input.description);
       formData.append("category", input.category);
       formData.append("courseLevel", input.courseLevel);
-      formData.append("coursePrice", input.coursePrice);
-      
-      // Crucial part: Handle the thumbnail properly
-      if (input.courseThumbnail) {
-        formData.append("courseThumbnail", input.courseThumbnail);
-      }
+      formData.append("coursePrice", input.coursePrice);     
+      formData.append("courseThumbnail", input.courseThumbnail);
       
       if (input.courseDocument) {
         formData.append("courseDocument", input.courseDocument);
@@ -341,23 +341,10 @@ const CourseTab = () => {
                     className="w-64 h-40 object-cover rounded-lg"
                     alt="Course Thumbnail"
                   />
-                  <button 
-                    onClick={() => {
-                      setPreviewThumbnail("");
-                      setInput(prev => ({...prev, courseThumbnail: null}));
-                    }} 
-                    className="absolute top-2 right-2 p-1 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  
                 </div>
               )}
             </div>
-            {previewThumbnail && !input.courseThumbnail && (
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Using existing thumbnail. Upload a new one to replace it.
-              </p>
-            )}
           </div>
           
           {/* Enhanced PDF section */}

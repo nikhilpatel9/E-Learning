@@ -339,7 +339,7 @@ export const editCourse = async (req, res) => {
     try {
         const courseId = req.params.courseId;
         const {courseTitle, subTitle, description, category, courseLevel, coursePrice} = req.body;
-        const thumbnail = req.file;
+        const courseThumbnail = req.files;
         
         let course = await Course.findById(courseId);
         if(!course){
@@ -359,13 +359,14 @@ export const editCourse = async (req, res) => {
         };
         
         // Handle thumbnail upload if provided
-        if(thumbnail) {
+        if(courseThumbnail) {
             if(course.courseThumbnail){
                 const publicId = course.courseThumbnail.split("/").pop().split(".")[0];
                 await deleteMediaFromCloudinary(publicId); // delete old image
             }
             // upload a thumbnail on cloudinary
-            const uploadedImage = await uploadMedia(thumbnail.path);
+            const uploadedImage = await uploadMedia(req.files.courseThumbnail[0].path);
+        
             updateData.courseThumbnail = uploadedImage?.secure_url;
         }
         
