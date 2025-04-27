@@ -1,4 +1,3 @@
-/* eslint-disable no-constant-condition */
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,26 +9,23 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useGetCourseByIdQuery } from "@/features/api/courseApi";
-
 import { BadgeInfo, Lock, PlayCircle } from "lucide-react";
-
 import ReactPlayer from "react-player";
 import { useParams } from "react-router-dom";
 
 const CourseDetail = () => {
   const { courseId } = useParams();
-
-  const { data: courseByIdData, isLoading: courseByIdLoading } =
-    useGetCourseByIdQuery(courseId);
+  const { data: courseByIdData, isLoading: courseByIdLoading } = useGetCourseByIdQuery(courseId);
 
   const course = courseByIdData;
 
-  if (courseByIdLoading)
+  if (courseByIdLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <h1 className="text-2xl font-semibold">Loading...</h1>
       </div>
     );
+  }
 
   return (
     <div className="space-y-8">
@@ -72,18 +68,22 @@ const CourseDetail = () => {
           <Card className="shadow-md">
             <CardHeader>
               <CardTitle>Course Content</CardTitle>
-              <CardDescription>{course?.lectures.length} lectures</CardDescription>
+              <CardDescription>{course?.lectures?.length || 0} lectures</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {course?.lectures.map((lecture, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-md transition"
-                >
-                  <span>{true ? <PlayCircle size={16} /> : <Lock size={16} />}</span>
-                  <p className="font-medium">{lecture.lectureTitle}</p>
-                </div>
-              ))}
+              {course?.lectures?.length > 0 ? (
+                course.lectures.map((lecture, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-md transition"
+                  >
+                    <span>{true ? <PlayCircle size={16} /> : <Lock size={16} />}</span>
+                    <p className="font-medium">{lecture.lectureTitle}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500">No lectures available yet.</p>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -94,23 +94,23 @@ const CourseDetail = () => {
             <CardContent className="p-4 flex flex-col space-y-4">
               {/* Video Player */}
               <div className="w-full aspect-video rounded-lg overflow-hidden mb-4">
-                {course?.lectures[0]?.videoUrl ? (
+                {course?.lectures?.length > 0 && course.lectures[0]?.videoUrl ? (
                   <ReactPlayer
                     width="100%"
                     height="100%"
-                    url={course?.lectures[0].videoUrl}
+                    url={course.lectures[0].videoUrl}
                     controls
                   />
                 ) : (
-                  <div className="flex items-center justify-center h-full bg-gray-200 dark:bg-gray-800 text-gray-500">
-                    No Preview Available
+                  <div className="flex items-center justify-center w-full h-64 bg-gray-200 dark:bg-gray-800 rounded-lg">
+                    <p className="text-gray-500">No Preview Available</p>
                   </div>
                 )}
               </div>
 
               {/* Lecture Title */}
               <h2 className="text-lg font-semibold">
-                {course?.lectures[0]?.lectureTitle || "Lecture Title"}
+                {course?.lectures?.length > 0 ? course.lectures[0]?.lectureTitle : "Lecture Title"}
               </h2>
 
               <Separator />
