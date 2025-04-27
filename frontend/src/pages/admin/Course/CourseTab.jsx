@@ -128,9 +128,7 @@ const CourseTab = () => {
 
   // Important function - fixed to properly handle thumbnail
   const updateCourseHandler = async () => {
-    console.log('====================================');
-    console.log(input);
-    console.log('====================================');
+    
     try {
       
       const formData = new FormData();
