@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-condition */
 import { Button } from "@/components/ui/button";
 import {
   Card,
