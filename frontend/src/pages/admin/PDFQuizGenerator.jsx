@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, FileText, Eye } from "lucide-react";
 import { useState } from "react";
-import PDFToQuizGenerator from '@/PDFToQuizGenerator';
+import PDFToQuizGenerator from '@/pages/admin/PDFToQuizGenerator';
 
 // eslint-disable-next-line react/prop-types
 const PDFQuizGenerator = ( {courseId} ) => {
