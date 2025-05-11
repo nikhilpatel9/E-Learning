@@ -36,6 +36,7 @@
     "pdf-parse": "^1.1.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
-    "sonner": "^1.7.4"
+    "sonner": "^1.7.4",
+    "stripe": "^18.1.0"
   }
 }
