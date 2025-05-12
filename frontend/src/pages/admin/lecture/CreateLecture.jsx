@@ -1,4 +1,3 @@
-import PDFQuizGenerator from "@/pages/admin/PDFQuizGenerator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +43,7 @@ export default function CreateLecture() {
 
   return (
     <>
-      <PDFQuizGenerator courseId={courseId} />
+     
       <div className="flex flex-col items-center justify-start min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
         <div className="w-full max-w-4xl p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg">
           <div className="mb-6">
