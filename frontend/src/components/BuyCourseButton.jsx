@@ -1,29 +1,38 @@
-import  { useEffect } from "react";
+/* eslint-disable react/prop-types */
+import { useEffect } from "react";
 import { Button } from "./ui/button";
 import { useCreateCheckoutSessionMutation } from "@/features/api/purchaseApi";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-const BuyCourseButton = ( courseId ) => {
-  const [createCheckoutSession, {data, isLoading, isSuccess, isError, error }] =
+const BuyCourseButton = ( {courseId} ) => {
+  console.log(courseId);
+  
+  const [createCheckoutSession, { data, isLoading, isSuccess, isError, error }] =
     useCreateCheckoutSessionMutation();
 
   const purchaseCourseHandler = async () => {
-    await createCheckoutSession(courseId);
+    try {
+      await createCheckoutSession(courseId).unwrap();
+    } catch (err) {
+      console.log(err);
+      
+      // error handling is already in useEffect
+    }
   };
 
-  useEffect(()=>{
-    if(isSuccess){
-       if(data?.url){
-        window.location.href = data.url; // Redirect to stripe checkout url
-       }else{
-        toast.error("Invalid response from server.")
-       }
-    } 
-    if(isError){
-      toast.error(error?.data?.message || "Failed to create checkout session")
+  useEffect(() => {
+    if (isSuccess) {
+      if (data?.url) {
+        window.location.href = data.url; // Redirect to PayPal approval URL
+      } else {
+        toast.error("Invalid response from server.");
+      }
     }
-  },[data, isSuccess, isError, error])
+    if (isError) {
+      toast.error(error?.data?.message || "Failed to create checkout session");
+    }
+  }, [data, isSuccess, isError, error]);
 
   return (
     <Button

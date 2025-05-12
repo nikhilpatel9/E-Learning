@@ -266,11 +266,22 @@ const CourseDetail = () => {
                   </div>
                 )}
               </CardContent>          
-              
-            </Card>           
+            </Card>
+            
+            {/* Quiz Generator Card - Properly integrated into the layout */}
+            {purchased && (
+              <Card className="shadow-md border-0 rounded-xl bg-white dark:bg-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-semibold">Generate Practice Quiz</CardTitle>
+                  <CardDescription>Test your knowledge with a custom quiz based on course materials</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PDFQuizGenerator courseId={courseId} />
+                </CardContent>
+              </Card>
+            )}
           </div>         
         </div>
-        <PDFQuizGenerator courseId={courseId} />
       </div>
     </div>
   );
