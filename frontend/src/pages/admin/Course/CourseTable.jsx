@@ -48,7 +48,7 @@ const CourseTable = () => {
           {data?.courses?.map((course) => (
             <TableRow key={course._id} className="hover:bg-gray-100 dark:hover:bg-gray-800">
               <TableCell className="font-medium text-gray-800 dark:text-gray-300">
-                {course?.coursePrice || "NA"}
+                ${course?.coursePrice || "0"}
               </TableCell>
               <TableCell>
                 <Badge className={

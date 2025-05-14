@@ -54,7 +54,8 @@ const CourseDetail = () => {
   }
 
   const { course, purchased } = data;
-
+  console.log(purchased);
+  
   const handleContinueCourse = () => {
     if (purchased) {
       navigate(`/course-progress/${courseId}`);
@@ -156,7 +157,7 @@ const CourseDetail = () => {
 
                   {/* Course Price */}
                   <div className="flex justify-between items-center">
-                    <h3 className="text-3xl font-bold text-indigo-600">₹{course?.coursePrice || "Free"}</h3>
+                    <h3 className="text-3xl font-bold text-indigo-600">${course?.coursePrice || "Free"}</h3>
                   </div>
 
                   {/* Buy/Continue Button */}
@@ -251,7 +252,7 @@ const CourseDetail = () => {
                       </div>
                       <div className="flex-grow">
                         <p className="font-medium text-gray-800 dark:text-gray-200">{lecture.lectureTitle}</p>
-                        <p className="text-sm text-gray-500">15:30 min</p>
+                        <p className="text-sm text-gray-500">1:30 min</p>
                       </div>
                       {purchased && (
                         <Button variant="ghost" size="sm" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/30">

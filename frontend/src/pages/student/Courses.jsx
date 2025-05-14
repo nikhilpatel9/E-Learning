@@ -4,9 +4,6 @@ import { useGetPublishedCourseQuery } from "@/features/api/courseApi";
 
 const Courses = () => {
   const { data, isLoading, isError } = useGetPublishedCourseQuery();
-  console.log('====================================');
-  console.log(data);
-  console.log('====================================');
   if (isError) return <h1>Some error occurred while fetching courses.</h1>;
 
   return (

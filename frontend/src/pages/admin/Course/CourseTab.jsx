@@ -89,7 +89,7 @@ const CourseTab = () => {
 
   const changeEventHandler = (e) => {
     const { name, value } = e.target;
-    console.log(`Updating ${name} to: ${value}`);
+    //console.log(`Updating ${name} to: ${value}`);
     setInput(prev => ({ ...prev, [name]: value }));
   };
 
@@ -300,13 +300,13 @@ const CourseTab = () => {
               </Select>
             </div>
             <div>
-              <Label className="text-gray-700 dark:text-gray-300">Price in (INR)</Label>
+              <Label className="text-gray-700 dark:text-gray-300">Price in ($USD)</Label>
               <Input
                 type="number"
                 name="coursePrice"
                 value={input.coursePrice}
                 onChange={changeEventHandler}
-                placeholder="199"
+                placeholder="2.99"
                 className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200"
               />
             </div>

@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const BuyCourseButton = ( {courseId} ) => {
-  console.log(courseId);
+  
   
   const [createCheckoutSession, { data, isLoading, isSuccess, isError, error }] =
     useCreateCheckoutSessionMutation();

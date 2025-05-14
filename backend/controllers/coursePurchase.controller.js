@@ -10,6 +10,7 @@ const environment = new paypal.core.SandboxEnvironment(
 );
 const client = new paypal.core.PayPalHttpClient(environment);
 
+// ✅ Create Checkout Session (No DB entry here)
 export const createCheckoutSession = async (req, res) => {
   try {
     const userId = req.id;
@@ -26,29 +27,21 @@ export const createCheckoutSession = async (req, res) => {
         {
           amount: {
             currency_code: "USD",
-            value: (course.coursePrice).toFixed(2),
+            value: course.coursePrice.toFixed(2),
           },
           description: course.courseTitle,
+          custom_id: JSON.stringify({ userId, courseId }), // ⬅️ Store metadata
         },
       ],
       application_context: {
+        
         return_url: `http://localhost:5173/course-progress/${courseId}`,
         cancel_url: `http://localhost:5173/course-detail/${courseId}`,
       },
     });
 
     const order = await client.execute(request);
-
-    const newPurchase = new CoursePurchase({
-      courseId,
-      userId,
-      amount: course.coursePrice,
-      status: "pending",
-      paymentId: order.result.id,
-    });
-    await newPurchase.save();
-
-    const approvalUrl = order.result.links.find(link => link.rel === "approve").href;
+    const approvalUrl = order.result.links.find(link => link.rel === "approve")?.href;
 
     return res.status(200).json({
       success: true,
@@ -60,39 +53,54 @@ export const createCheckoutSession = async (req, res) => {
   }
 };
 
+// ✅ Capture Payment and Create Purchase
 export const capturePayment = async (req, res) => {
   try {
     const { orderId } = req.body;
+
     const captureRequest = new paypal.orders.OrdersCaptureRequest(orderId);
     captureRequest.requestBody({});
-
     const capture = await client.execute(captureRequest);
 
-    const purchase = await CoursePurchase.findOne({
+    const metadata = JSON.parse(capture.result.purchase_units[0].custom_id || "{}");
+    const { userId, courseId } = metadata;
+
+    if (!userId || !courseId) {
+      return res.status(400).json({ message: "Invalid order metadata" });
+    }
+
+    const existingPurchase = await CoursePurchase.findOne({ paymentId: orderId });
+    if (existingPurchase) {
+      return res.status(400).json({ message: "Payment already captured" });
+    }
+
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ message: "Course not found!" });
+
+    const newPurchase = new CoursePurchase({
+      courseId,
+      userId,
+      amount: capture.result.purchase_units[0].payments.captures[0].amount.value,
+      status: "completed",
       paymentId: orderId,
-    }).populate({ path: "courseId" });
+    });
+    await newPurchase.save();
 
-    if (!purchase) return res.status(404).json({ message: "Purchase not found" });
-
-    purchase.status = "completed";
-    purchase.amount = capture.result.purchase_units[0].payments.captures[0].amount.value;
-    await purchase.save();
-
-    if (purchase.courseId && purchase.courseId.lectures.length > 0) {
+    if (course.lectures.length > 0) {
       await Lecture.updateMany(
-        { _id: { $in: purchase.courseId.lectures } },
+        { _id: { $in: course.lectures } },
         { $set: { isPreviewFree: true } }
       );
     }
 
     await User.findByIdAndUpdate(
-      purchase.userId,
-      { $addToSet: { enrolledCourses: purchase.courseId._id } }
+      userId,
+      { $addToSet: { enrolledCourses: courseId } }
     );
 
     await Course.findByIdAndUpdate(
-      purchase.courseId._id,
-      { $addToSet: { enrolledStudents: purchase.userId } }
+      courseId,
+      { $addToSet: { enrolledStudents: userId } }
     );
 
     return res.status(200).json({
@@ -105,20 +113,25 @@ export const capturePayment = async (req, res) => {
   }
 };
 
+// ✅ Check course detail & whether it's purchased (only 'completed')
 export const getCourseDetailWithPurchaseStatus = async (req, res) => {
   try {
     const { courseId } = req.params;
     const userId = req.id;
-    
-    const course = await Course.findById(courseId)
-      .populate({ path: "creator" })
-      .populate({ path: "lectures" });
 
-    const purchased = await CoursePurchase.findOne({ userId, courseId });
+    const course = await Course.findById(courseId)
+      .populate("creator")
+      .populate("lectures");
 
     if (!course) {
-      return res.status(404).json({ message: "course not found!" });
+      return res.status(404).json({ message: "Course not found!" });
     }
+
+    const purchased = await CoursePurchase.findOne({
+      userId,
+      courseId,
+      status: "completed",
+    });
 
     return res.status(200).json({
       course,
@@ -126,21 +139,20 @@ export const getCourseDetailWithPurchaseStatus = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
+// ✅ Get all completed purchases
 export const getAllPurchasedCourse = async (_, res) => {
   try {
     const purchasedCourse = await CoursePurchase.find({
       status: "completed",
     }).populate("courseId");
 
-    if (!purchasedCourse) {
-      return res.status(404).json({ purchasedCourse: [] });
-    }
-
     return res.status(200).json({ purchasedCourse });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
