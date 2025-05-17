@@ -25,6 +25,8 @@ import PDFQuizGenerator from "../admin/PDFQuizGenerator";
 const CourseDetail = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  
+  
   const { data, isLoading, isError } = useGetCourseDetailWithStatusQuery(courseId);
   
   if (isLoading) {
@@ -54,6 +56,8 @@ const CourseDetail = () => {
   }
 
   const { course, purchased } = data;
+ 
+  
   console.log(purchased);
   
   const handleContinueCourse = () => {
