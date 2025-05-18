@@ -8,7 +8,8 @@ import courseRoute from './routes/course.router.js';
 import mediaRoute from './routes/media.router.js';
 import purchaseRoute from "./routes/coursePurchase.router.js";
 import courseProgressRoute from "./routes/courseProgress.router.js";
-
+import path from 'path'
+const _dirname = path.resolve()
 dotenv.config();
 const app = express();
 mongoose
@@ -31,6 +32,10 @@ app.use("/api/course",courseRoute);
 app.use("/api/media", mediaRoute);
 app.use("/api/purchase",purchaseRoute);
 app.use("/api/progress", courseProgressRoute);
+app.use(express.static(path.join(_dirname,"/frontend/dist")))
+app.get('*',(req,res)=>{
+  res.sendFile(path.resolve(_dirname,"frontend","dist","index.html"))
+})
 app.listen(process.env.PORT||3000, () => {
     console.log(`Server is running on port ${process.env.PORT}`);
   });
