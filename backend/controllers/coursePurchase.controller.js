@@ -15,7 +15,7 @@ export const createCheckoutSession = async (req, res) => {
   try {
     const userId = req.id;
     const { courseId } = req.body;
-
+     
     const course = await Course.findById(courseId);
     if (!course) return res.status(404).json({ message: "Course not found!" });
 
@@ -33,9 +33,10 @@ export const createCheckoutSession = async (req, res) => {
           custom_id: JSON.stringify({ userId, courseId }), // ⬅️ Store metadata
         },
       ],
+      
       application_context: {
-        
-        return_url: `http://localhost:5173/course-progress/${courseId}`,
+        // UPDATED: Return URL now points to our payment handler
+        return_url: `http://localhost:5173/payment/success/${courseId}`,
         cancel_url: `http://localhost:5173/course-detail/${courseId}`,
       },
     });
@@ -56,63 +57,175 @@ export const createCheckoutSession = async (req, res) => {
 // ✅ Capture Payment and Create Purchase
 export const capturePayment = async (req, res) => {
   try {
+   
     const { orderId } = req.body;
-
-    const captureRequest = new paypal.orders.OrdersCaptureRequest(orderId);
-    captureRequest.requestBody({});
-    const capture = await client.execute(captureRequest);
-
-    const metadata = JSON.parse(capture.result.purchase_units[0].custom_id || "{}");
-    const { userId, courseId } = metadata;
-
-    if (!userId || !courseId) {
-      return res.status(400).json({ message: "Invalid order metadata" });
+    
+    if (!orderId) {
+      console.error("Missing orderId in request body:", req.body);
+      return res.status(400).json({ 
+        message: "Missing order ID in request", 
+        receivedPayload: req.body 
+      });
     }
 
+    
     const existingPurchase = await CoursePurchase.findOne({ paymentId: orderId });
     if (existingPurchase) {
-      return res.status(400).json({ message: "Payment already captured" });
+      
+      return res.status(200).json({ 
+        success: true,
+        message: "Payment already processed",
+        purchase: existingPurchase
+      });
     }
 
-    const course = await Course.findById(courseId);
-    if (!course) return res.status(404).json({ message: "Course not found!" });
+    
+    try {
+      // Create and execute the PayPal capture request
+      const captureRequest = new paypal.orders.OrdersCaptureRequest(orderId);
+      captureRequest.requestBody({});
+       const capture = await client.execute(captureRequest);
+      
+      // Extract metadata from the order
+      const customIdRaw = capture.result.purchase_units[0].payments;
+        const customId = customIdRaw.captures[0].custom_id;
+       
+      
+      let metadata;
+      try {
+        metadata = JSON.parse(customId || "{}");
+        
+      } catch (jsonError) {
+        console.error("Error parsing custom_id JSON:", jsonError, "Raw value:", customIdRaw);
+        return res.status(400).json({ 
+          message: "Error parsing order metadata", 
+          rawCustomId: customIdRaw 
+        });
+      }
+      
+      const { userId, courseId } = metadata;
+      
+      if (!userId || !courseId) {
+        console.error("Missing userId or courseId in metadata:", metadata);
+        return res.status(400).json({ 
+          message: "Missing userId or courseId in metadata", 
+          metadata: metadata 
+        });
+      }
+      
+      // Look up the course
+    
+      const course = await Course.findById(courseId);
+      if (!course) {
+        console.error("Course not found with ID:", courseId);
+        return res.status(404).json({ message: "Course not found" });
+      }
+      
+      // Look up the user
+     
+      const user = await User.findById(userId);
+      if (!user) {
+       
+        return res.status(404).json({ message: "User not found" });
+      }
 
-    const newPurchase = new CoursePurchase({
-      courseId,
-      userId,
-      amount: capture.result.purchase_units[0].payments.captures[0].amount.value,
-      status: "completed",
-      paymentId: orderId,
-    });
-    await newPurchase.save();
+      
+      try {
+        const newPurchase = new CoursePurchase({
+          courseId,
+          userId,
+          amount: capture.result.purchase_units[0].payments.captures[0].amount.value,
+          status: "completed",
+          paymentId: orderId,
+        });
+        
+        await newPurchase.save();
+        
+      } catch (dbError) {
+        console.error("Error creating purchase record:", dbError);
+        return res.status(500).json({ 
+          message: "Failed to create purchase record", 
+          error: dbError.message 
+        });
+      }
 
-    if (course.lectures.length > 0) {
-      await Lecture.updateMany(
-        { _id: { $in: course.lectures } },
-        { $set: { isPreviewFree: true } }
-      );
+      // Update lecture access
+      try {
+        if (course.lectures && course.lectures.length > 0) {
+          await Lecture.updateMany(
+            { _id: { $in: course.lectures } },
+            { $set: { isPreviewFree: true } }
+          );
+         
+        }
+      } catch (lectureError) {
+        console.error("Error updating lecture access:", lectureError);
+        // Continue with the process even if this fails
+      }
+
+      // Update user enrolled courses
+      try {
+
+        await User.findByIdAndUpdate(
+          userId,
+          { $addToSet: { enrolledCourses: courseId } }
+        );
+        
+      } catch (userError) {
+        console.error("Error updating user enrolled courses:", userError);
+        // Continue with the process even if this fails
+      }
+
+      // Update course enrolled students
+      try {
+       
+        await Course.findByIdAndUpdate(
+          courseId,
+          { $addToSet: { enrolledStudents: userId } }
+        );
+       
+      } catch (courseError) {
+        console.error("Error updating course enrolled students:", courseError);
+        // Continue with the process even if this fails
+      }
+
+      // Return success response
+     
+      return res.status(200).json({
+        success: true,
+        message: "Payment captured and course access granted"
+      });
+      
+    } catch (paypalError) {
+      console.error("PayPal API error:", paypalError);
+      
+      // More detailed error response
+      let errorDetails = {
+        name: paypalError.name,
+        message: paypalError.message
+      };
+      
+      if (paypalError.statusCode) {
+        errorDetails.statusCode = paypalError.statusCode;
+      }
+      
+      if (paypalError.details) {
+        errorDetails.details = paypalError.details;
+      }
+      
+      return res.status(400).json({ 
+        message: "PayPal payment capture failed", 
+        paypalError: errorDetails 
+      });
     }
-
-    await User.findByIdAndUpdate(
-      userId,
-      { $addToSet: { enrolledCourses: courseId } }
-    );
-
-    await Course.findByIdAndUpdate(
-      courseId,
-      { $addToSet: { enrolledStudents: userId } }
-    );
-
-    return res.status(200).json({
-      success: true,
-      message: "Payment captured and course access granted",
-    });
   } catch (error) {
-    console.error("Error capturing payment:", error);
-    return res.status(500).json({ message: "Payment capture failed" });
+    console.error("Server error in capturePayment:", error);
+    return res.status(500).json({ 
+      message: "Server error processing payment", 
+      error: error.message 
+    });
   }
 };
-
 // ✅ Check course detail & whether it's purchased (only 'completed')
 export const getCourseDetailWithPurchaseStatus = async (req, res) => {
   try {

@@ -23,6 +23,7 @@ import {
   ProtectedRoute,
 } from "./components/ProtectedRoutes";
 import PurchaseCourseProtectedRoute from "./components/PurchaseCourseProtectedRoute";
+import PayPalReturnHandler from "./pages/student/PayPalReturnHandler";
 
 
 const appRouter = createBrowserRouter([
@@ -73,7 +74,10 @@ const appRouter = createBrowserRouter([
           </ProtectedRoute>
          
         ),
-      }, {
+      },{
+    path: "/payment/success/:courseId",
+    element: <PayPalReturnHandler />
+  }, {
         path: "course-progress/:courseId",
         element: (
          <ProtectedRoute>

@@ -18,13 +18,23 @@ export const purchaseApi = createApi({
       }),
     }),
 
-    // 2. Capture PayPal payment
+    // 2. Capture PayPal payment - FIXED
     capturePayment: builder.mutation({
-      query: (orderId) => ({
-        url: "/checkout/capture-payment",
-        method: "POST",
-        body: { orderId },
-      }),
+      query: (payload) => {
+        // Log what we're receiving from the component
+        console.log("RTK capturePayment received payload:", payload);
+        
+        // Handle both formats: string or {orderId: string}
+        const orderId = typeof payload === 'string' ? payload : payload.orderId;
+        
+        console.log("Normalized orderId for API request:", orderId);
+        
+        return {
+          url: "/checkout/capture-payment",
+          method: "POST",
+          body: { orderId },
+        };
+      },
     }),
 
     // 3. Get course details + purchase status

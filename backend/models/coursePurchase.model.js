@@ -11,7 +11,7 @@ const coursePurchaseSchema = new mongoose.Schema({
         required:true
     },
     amount:{
-        type:Number,
+        type:String,
         required:true
     },
     status:{
@@ -21,7 +21,8 @@ const coursePurchaseSchema = new mongoose.Schema({
     },
     paymentId:{
         type:String,
-        required:true
+        required:true,
+        unique: true
     }
 
 },{timestamps:true});
