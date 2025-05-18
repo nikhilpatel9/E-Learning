@@ -36,8 +36,8 @@ export const createCheckoutSession = async (req, res) => {
       
       application_context: {
         // UPDATED: Return URL now points to our payment handler
-        return_url: `http://localhost:5173/payment/success/${courseId}`,
-        cancel_url: `http://localhost:5173/course-detail/${courseId}`,
+        return_url: `https://e-learning-mbha.onrender.com/payment/success/${courseId}`,
+        cancel_url: `https://e-learning-mbha.onrender.com/course-detail/${courseId}`,
       },
     });
 
