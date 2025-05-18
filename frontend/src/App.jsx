@@ -24,6 +24,7 @@ import {
 } from "./components/ProtectedRoutes";
 import PurchaseCourseProtectedRoute from "./components/PurchaseCourseProtectedRoute";
 import PayPalReturnHandler from "./pages/student/PayPalReturnHandler";
+import SearchPage from "./pages/student/SearchPage";
 
 
 const appRouter = createBrowserRouter([
@@ -42,6 +43,14 @@ const appRouter = createBrowserRouter([
       },{
         path: "courses",
         element: <Courses/>
+      },
+       {
+        path: "course/search",
+        element: (
+          <ProtectedRoute>
+            <SearchPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "login",

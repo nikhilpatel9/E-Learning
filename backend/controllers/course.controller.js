@@ -28,46 +28,64 @@ export const createCourse = async (req,res) => {
     }
 }
 
-export const searchCourse = async (req,res) => {
-    try {
-        const {query = "", categories = [], sortByPrice =""} = req.query;
-        console.log(categories);
-        
-        // create search query
-        const searchCriteria = {
-            isPublished:true,
-            $or:[
-                {courseTitle: {$regex:query, $options:"i"}},
-                {subTitle: {$regex:query, $options:"i"}},
-                {category: {$regex:query, $options:"i"}},
-            ]
-        }
-
-        // if categories selected
-        if(categories.length > 0) {
-            searchCriteria.category = {$in: categories};
-        }
-
-        // define sorting order
-        const sortOptions = {};
-        if(sortByPrice === "low"){
-            sortOptions.coursePrice = 1;//sort by price in ascending
-        }else if(sortByPrice === "high"){
-            sortOptions.coursePrice = -1; // descending
-        }
-
-        let courses = await Course.find(searchCriteria).populate({path:"creator", select:"name photoUrl"}).sort(sortOptions);
-
-        return res.status(200).json({
-            success:true,
-            courses: courses || []
-        });
-
-    } catch (error) {
-        console.log(error);
-        
+export const searchCourse = async (req, res) => {
+  try {
+    let { query = "", categories, sortByPrice = "" } = req.query;
+    
+    // Handle categories parameter properly
+    // If categories comes as a single string, convert it to an array
+    if (typeof categories === "string" && categories.length > 0) {
+      categories = [categories];
+    } 
+    // If categories comes as categories[] format from the API call
+    else if (Array.isArray(req.query['categories[]'])) {
+      categories = req.query['categories[]'];
     }
-}
+    // If no categories or empty array, set to empty array
+    else if (!categories) {
+      categories = [];
+    }
+    
+    // Build search criteria
+    const searchCriteria = {
+      isPublished: true,
+      $or: [
+        { courseTitle: { $regex: query, $options: "i" } },
+        { subTitle: { $regex: query, $options: "i" } },
+        { category: { $regex: query, $options: "i" } },
+      ],
+    };
+    
+    // Only add category filter if categories array has items
+    if (categories && categories.length > 0) {
+      // Use case-insensitive regex for more flexible matching
+      const categoryRegexes = categories.map(cat => new RegExp(cat, 'i'));
+      searchCriteria.category = { $in: categoryRegexes };
+    }
+    
+    const sortOptions = {};
+    if (sortByPrice === "low") {
+      sortOptions.coursePrice = 1;
+    } else if (sortByPrice === "high") {
+      sortOptions.coursePrice = -1;
+    }
+    
+    const courses = await Course.find(searchCriteria)
+      .populate({ path: "creator", select: "name photoUrl" })
+      .sort(sortOptions);
+    
+    return res.status(200).json({
+      success: true,
+      courses: courses || [],
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+
 
 export const getPublishedCourse = async (_,res) => {
     try {

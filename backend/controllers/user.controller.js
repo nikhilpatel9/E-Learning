@@ -144,7 +144,7 @@ export const getUserProfile = async (req,res) => {
        // console.log("Loading user profile", req)
        // const user = await User.findById(req._id);
         const userId = req.id;
-        const user = await User.findById(userId).select("-password");
+        const user = await User.findById(userId).select("-password").populate("enrolledCourses");
        
         if(!user){
             return res.status(404).json({

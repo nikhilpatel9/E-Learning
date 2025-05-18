@@ -2,11 +2,13 @@
 import { Button } from "@/components/ui/button";
 import Course from "./Course";
 import { useNavigate } from "react-router-dom";
+import { useLoadUserQuery } from "@/features/api/authApi";
 
 export default function MyLearning() {
     const navigate =useNavigate();
-    const isLoading = false;
-    const myLearning = [];
+    const {data, isLoading} = useLoadUserQuery();
+
+    const myLearning = data?.user.enrolledCourses ||  [];
     return (
       <div className="max-w-4xl mx-auto my-10 px-4 md:px-0">
         <h1 className="font-bold text-2xl text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-3">
