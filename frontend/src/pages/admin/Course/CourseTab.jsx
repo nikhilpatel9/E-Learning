@@ -22,6 +22,7 @@ import {
   useEditCourseMutation,
   useGetCourseByIdQuery,
   usePublishCourseMutation,
+  useRemoveCourseMutation,
 } from "@/features/api/courseApi";
 import { FileText, Loader2, X, Upload, Eye } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -48,6 +49,8 @@ const CourseTab = () => {
 
   // eslint-disable-next-line no-empty-pattern
   const [publishCourse, {}] = usePublishCourseMutation();
+  const [deleteCourse, { isLoading: isDeleting }] = useRemoveCourseMutation();
+
  
   const [previewThumbnail, setPreviewThumbnail] = useState("");
   const [documentPreviewUrl, setDocumentPreviewUrl] = useState("");
@@ -155,6 +158,19 @@ const CourseTab = () => {
       toast.error("An error occurred while updating the course.");
     }
   };
+const handleDeleteCourse = async () => {
+  if (!window.confirm("Are you sure you want to delete this course? This action cannot be undone.")) return;
+
+  try {
+    const res = await deleteCourse(courseId).unwrap();
+    toast.success(res.message || "Course deleted successfully.");
+    navigate("/admin/course");
+  } catch (err) {
+    console.error("Delete error:", err);
+    toast.error(err?.data?.message || "Failed to delete course.");
+  }
+};
+
   const publishStatusHandler = async (action) => {
     try {
       console.log("Publishing status change for course ID:", courseId);
@@ -162,7 +178,7 @@ const CourseTab = () => {
       if (response.data) {
         refetch();
         toast.success(response.data.message);
-        navigate(`/admin/course/`);
+        navigate(`/admin/course`);
         setTimeout(() => {
           window.location.reload();
         }, 100);
@@ -219,9 +235,14 @@ const CourseTab = () => {
           >
             {courseByIdData?.course?.isPublished ? "Unpublish" : "Publish"}
           </Button>
-          <Button className="bg-red-600 hover:bg-red-700 text-white">
-            Remove Course
-          </Button>
+          <Button 
+          className="bg-red-600 hover:bg-red-700 text-white"
+          onClick={handleDeleteCourse}
+          disabled={isDeleting}
+        >
+  {isDeleting ? "Removing..." : "Remove Course"}
+</Button>
+
         </div>
       </CardHeader>
       <CardContent>
