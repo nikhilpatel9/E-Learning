@@ -49,7 +49,7 @@ const CourseTab = () => {
 
   // eslint-disable-next-line no-empty-pattern
   const [publishCourse, {}] = usePublishCourseMutation();
-  const [deleteCourse, { isLoading: isDeleting }] = useRemoveCourseMutation();
+  const [removeCourse, { isLoading: isDeleting }] = useRemoveCourseMutation();
 
  
   const [previewThumbnail, setPreviewThumbnail] = useState("");
@@ -162,7 +162,7 @@ const handleDeleteCourse = async () => {
   if (!window.confirm("Are you sure you want to delete this course? This action cannot be undone.")) return;
 
   try {
-    const res = await deleteCourse(courseId).unwrap();
+    const res = await removeCourse(courseId).unwrap();
     toast.success(res.message || "Course deleted successfully.");
     navigate("/admin/course");
   } catch (err) {
