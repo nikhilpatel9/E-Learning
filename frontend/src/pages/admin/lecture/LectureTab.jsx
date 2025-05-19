@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner";
 import axios from "axios";
 
-const MEDIA_API = "https://e-learning-mbha.onrender.com//api/media";
+const MEDIA_API = "https://e-learning-mbha.onrender.com/api/media";
 
 export default function LectureTab() {
   const [lectureTitle, setLectureTitle] = useState("");

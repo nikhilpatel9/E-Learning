@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { userLoggedIn, userLoggedOut } from "../authSlice";
 import { signInWithGoogle } from "../firebase";
 
-const USER_API = "https://e-learning-mbha.onrender.com/api/user/";
+const USER_API = "https://e-learning-mbha.onrender.com/api/user";
 
 export const authApi = createApi({
     reducerPath: "authApi",
