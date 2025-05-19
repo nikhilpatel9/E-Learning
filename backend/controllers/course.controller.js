@@ -642,9 +642,7 @@ export const removeCourse = async (req, res) => {
         // Delete the course
         await Course.findByIdAndDelete(courseId);
         
-        return res.status(200).json({
-            message: "Course and all associated content deleted successfully."
-        });
+       
     } catch (error) {
         console.log(error);
         return res.status(500).json({
