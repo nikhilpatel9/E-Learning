@@ -642,7 +642,9 @@ export const removeCourse = async (req, res) => {
         // Delete the course
         await Course.findByIdAndDelete(courseId);
         
-       
+        return res.status(200).json({
+            message: "Course and all associated content deleted successfully."
+        });
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -650,18 +652,3 @@ export const removeCourse = async (req, res) => {
         });
     }
 }
-    // Delete associated lectures
-    await Lecture.deleteMany({ _id: { $in: course.lectures } });
-
-    // Delete course itself
-    await Course.findByIdAndDelete(courseId);
-
-  
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to delete course",
-    });
-  }
-};
